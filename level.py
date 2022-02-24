@@ -161,7 +161,7 @@ class Level:
         player.rect.x += player.direction.x * player.speed
 
         for sprite in self.terrain_sprites:
-            if sprite.rect.colliderect(player.rect):
+            if sprite.rect.colliderect(player.rect) and not self.constraints_sprites:
                 if player.direction.x < 0:
                     player.rect.left = sprite.rect.right
                     player.on_left = True

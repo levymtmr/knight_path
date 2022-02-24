@@ -7,7 +7,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.import_characters_assets()
         self.frame_index = 0
-        self.animation_speed = 0.15
+        self.animation_speed = 0.08
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft = pos)
 
@@ -22,7 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2(0, 0)
         self.speed = 5
         self.gravity = 0.8
-        self.jump_speed = -16
+        self.jump_speed = -20
 
         # player status
         self.status = 'idle'
