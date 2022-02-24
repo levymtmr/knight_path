@@ -138,7 +138,7 @@ class Level:
                     tile = Tile((pos_x, pos_y), tile_size)
                     self.tiles.add(tile)
                 if cell == 'p':
-                    self.player_sprite = Player((pos_x, pos_y), self.display_surface, self.create_jump_particles)
+                    self.player_sprite = Player((200, 200), self.display_surface, self.create_jump_particles)
                     self.player.add(self.player_sprite)
 
     def scroll_x(self):
@@ -160,7 +160,7 @@ class Level:
         player = self.player.sprite
         player.rect.x += player.direction.x * player.speed
 
-        for sprite in self.tiles.sprites():
+        for sprite in self.terrain_sprites:
             if sprite.rect.colliderect(player.rect):
                 if player.direction.x < 0:
                     player.rect.left = sprite.rect.right
@@ -180,7 +180,7 @@ class Level:
         player = self.player.sprite
         player.apply_gravity()
 
-        for sprite in self.tiles.sprites():
+        for sprite in self.terrain_sprites:
             if sprite.rect.colliderect(player.rect):
                 if player.direction.y > 0:
                     player.rect.bottom = sprite.rect.top
