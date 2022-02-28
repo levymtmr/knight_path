@@ -9,3 +9,8 @@ level_0 = {
     'player': './levels/0/level_0_player.csv',
     'grass': './levels/0/level_0_grass.csv'
 }
+
+world_levels = {
+    'level_0': level_0,
+    'level_1': ''
+}
