@@ -1,1 +1,4 @@
 pygame==2.1.2
+
+# dev dependencies
+black==22.1.0
