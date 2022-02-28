@@ -7,7 +7,7 @@ from player import Player
 from enemy import Enemy
 from particles import ParticleEffect
 from utils import import_csv_layout, import_cut_graphics
-from decoration import Sky, Water
+from decoration import Cloud, Sky, Water
 
 class Level:
     def __init__(self, level_data, surface):
@@ -57,6 +57,7 @@ class Level:
         self.sky = Sky(8)
         level_width = len(terrain_layout[0]) * tile_size
         self.water = Water(screen_height - 20, level_width)
+        self.clouds = Cloud(400, level_width, 30)
 
         # text logs
         self.font = pygame.font.SysFont(None, 12)
@@ -215,9 +216,9 @@ class Level:
                 enemy.reverse_movement()
 
     def run(self):
-
-        # decoration
+        # sky
         self.sky.draw(self.display_surface)
+        self.clouds.draw(self.display_surface, self.world_shift)
 
         # dust particles
         self.dust_sprite.update(self.world_shift)
