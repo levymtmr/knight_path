@@ -7,8 +7,8 @@ from overworld import Overworld
 
 class Game:
     def __init__(self):
-        self.max_level = 3
-        self.overworld = Overworld(0, self.max_level, screen)
+        self.max_level = 4
+        self.overworld = Overworld(1, self.max_level, screen)
 
     def run(self):
         self.overworld.run()
@@ -27,10 +27,10 @@ while True:
             pygame.quit()
             sys.exit()
 
+    screen.fill("gray")
     game.run()
 
-    screen.fill("gray")
-    level.run()
+    # level.run()
 
     pygame.display.update()
     clock.tick(60)
