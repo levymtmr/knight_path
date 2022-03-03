@@ -27,11 +27,13 @@ class PlayerIcon(pygame.sprite.Sprite):
     def update(self):
         self.rect.center = self.pos
 
+
 class Overworld:
-    def __init__(self, start_level, max_level, surface):
+    def __init__(self, start_level, max_level, surface, create_level):
         self.display_surface = surface
         self.max_level = max_level
         self.current_level = start_level
+        self.create_level = create_level
 
         # movement logic
         self.moving = False
@@ -40,7 +42,6 @@ class Overworld:
 
         self.setup_nodes()
         self.setup_player_icon()
-
 
     def setup_nodes(self):
         self.nodes = pygame.sprite.Group()
@@ -55,7 +56,10 @@ class Overworld:
 
     def setup_player_icon(self):
         self.player_icon = pygame.sprite.GroupSingle()
-        icon_sprite = PlayerIcon(self.nodes.sprites()[self.current_level].rect.center)
+        posistion = self.current_level['node_pos']
+        icon_sprite = PlayerIcon(posistion)
+
+        # icon_sprite = PlayerIcon(self.nodes.sprites()[self.current_level].rect.center)
         self.player_icon.add(icon_sprite)
 
     def draw_lines(self):
@@ -73,31 +77,41 @@ class Overworld:
         keys = pygame.key.get_pressed()
 
         if not self.moving:
-            if keys[pygame.K_RIGHT] and self.current_level < self.max_level:
+            if keys[pygame.K_RIGHT] and self.current_level['stage'] < self.max_level:
                 self.move_direction = self.get_movement_data('next')
-                self.current_level += 1
+                self.current_level['stage'] += 1
                 self.moving = True
-            elif keys[pygame.K_LEFT] and self.current_level > 0:
+            elif keys[pygame.K_LEFT] and self.current_level['stage'] > 0:
                 self.move_direction = self.get_movement_data('previous')
-                self.current_level -= 1
+                self.current_level['stage'] -= 1
                 self.moving = True
+            elif keys[pygame.K_SPACE]:
+                self.create_level(self.current_level)
 
     def update_icon_position(self):
-        # self.player_icon.sprite.rect.center = self.nodes.sprites()[self.current_level].rect.center
         if self.moving and self.move_direction:
-            self.player_icon.sprite.pos += self.move_direction * self.speed
-            target_node = self.nodes.sprites()[self.current_level]
+            if self.current_level['stage'] == 0:
+                self.player_icon.sprite.pos += self.move_direction * self.speed
+            else:
+                self.player_icon.sprite.pos += self.move_direction * self.speed
+            target_node = self.nodes.sprites()[self.current_level['stage']]
             if target_node.detection_zone.collidepoint(self.player_icon.sprite.pos):
                 self.moving = False
                 self.move_direction = pygame.math.Vector2(0, 0)
 
     def get_movement_data(self, target):
-        start = pygame.math.Vector2(self.nodes.sprites()[self.current_level].rect.center)
         if target == 'next':
-            end = pygame.math.Vector2(self.nodes.sprites()[self.current_level + 1].rect.center)
-        else:
-            end = pygame.math.Vector2(self.nodes.sprites()[self.current_level - 1].rect.center)
+            next_stage = self.current_level['stage'] + 1
+            start = pygame.math.Vector2(world_levels[str(self.current_level['stage'])]['node_pos'])
+            end = pygame.math.Vector2(world_levels[str(next_stage)]['node_pos'])
 
+        if target == 'previous':
+            if self.current_level['stage'] == 0:
+                return world_levels[str(self.current_level['stage'])]['node_pos']
+            else:
+                next_stage = self.current_level['stage'] - 1
+                start = pygame.math.Vector2(world_levels[str(self.current_level['stage'])]['node_pos'])
+                end = pygame.math.Vector2(world_levels[str(next_stage)]['node_pos'])
         return (end - start).normalize()
 
     def run(self):

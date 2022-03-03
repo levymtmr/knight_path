@@ -1,4 +1,3 @@
-from re import S
 import pygame
 
 from tiles import Coin, Crate, Tile, StaticTile, Palm, Grass
@@ -8,18 +7,25 @@ from enemy import Enemy
 from particles import ParticleEffect
 from utils import import_csv_layout, import_cut_graphics
 from decoration import Cloud, Sky, Water
+from game_data import world_levels
 
 class Level:
-    def __init__(self, level_data, surface):
+    def __init__(self, current_level, surface, create_overworld):
         # group of tiles
         self.tiles = pygame.sprite.Group()
         self.player = pygame.sprite.GroupSingle()
 
+        self.current_level = current_level
+        self.level_content = self.current_level['content']
+        self.new_max_level = self.current_level['unlock']
+        self.level_data = self.current_level['data']
+
         # level setup
         self.display_surface = surface
-        self.setup_level(level_data)
+        self.setup_level(self.level_data)
         self.world_shift = 0
         self.current_x = 0
+        self.create_overworld = create_overworld
 
         # dust
         self.dust_sprite = pygame.sprite.GroupSingle()
@@ -27,30 +33,30 @@ class Level:
         self.player_on_ground = False
 
         # import layouts
-        terrain_layout = import_csv_layout(level_data['terrain'])
+        terrain_layout = import_csv_layout(self.level_data['terrain'])
         self.terrain_sprites = self.create_tile_group(terrain_layout, 'terrain')
 
-        grass_layout = import_csv_layout(level_data['grass'])
+        grass_layout = import_csv_layout(self.level_data['grass'])
         self.grass_sprites = self.create_tile_group(grass_layout, 'grass')
 
-        crates_layout = import_csv_layout(level_data['crates'])
+        crates_layout = import_csv_layout(self.level_data['crates'])
         self.crates_sprites = self.create_tile_group(crates_layout, 'crates')
 
-        coins_layout = import_csv_layout(level_data['coins'])
+        coins_layout = import_csv_layout(self.level_data['coins'])
         self.coins_sprites = self.create_tile_group(coins_layout, 'coins')
 
-        fg_palms_layout = import_csv_layout(level_data['fg_palms'])
+        fg_palms_layout = import_csv_layout(self.level_data['fg_palms'])
         self.fg_palms_sprites = self.create_tile_group(fg_palms_layout, 'fg_palms')
 
-        bg_palms_layout = import_csv_layout(level_data['bg_palms'])
+        bg_palms_layout = import_csv_layout(self.level_data['bg_palms'])
         self.bg_palms_sprites = self.create_tile_group(bg_palms_layout, 'bg_palms')
 
         # enemy
-        enemy_layout = import_csv_layout(level_data['enemies'])
+        enemy_layout = import_csv_layout(self.level_data['enemies'])
         self.enemy_sprites = self.create_tile_group(enemy_layout, 'enemies')
 
         # constraints
-        constraints_layout = import_csv_layout(level_data['constraints'])
+        constraints_layout = import_csv_layout(self.level_data['constraints'])
         self.constraints_sprites = self.create_tile_group(constraints_layout, 'constraint')
 
         # decoration
@@ -60,7 +66,9 @@ class Level:
         self.clouds = Cloud(400, level_width, 30)
 
         # text logs
-        self.font = pygame.font.SysFont(None, 12)
+        self.font = pygame.font.Font(None, 12)
+        self.text_surface = self.font.render(self.level_content, True, 'white')
+        self.text_rect = self.text_surface.get_rect(center = (screen_width / 2, screen_height / 2))
 
     def create_tile_group(self, layout, type):
         sprite_group = pygame.sprite.Group()
@@ -215,7 +223,19 @@ class Level:
             if pygame.sprite.spritecollide(enemy, self.constraints_sprites, False):
                 enemy.reverse_movement()
 
+    def input(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RETURN]:
+            current_stage = self.current_level['stage']
+            self.current_level = world_levels[str(current_stage)]
+            self.create_overworld(self.current_level, self.new_max_level)
+        if keys[pygame.K_ESCAPE]:
+            current_stage = self.current_level['stage']
+            self.current_level = world_levels[str(current_stage)]
+            self.create_overworld(self.current_level, 0)
+
     def run(self):
+        self.input()
         # sky
         self.sky.draw(self.display_surface)
         self.clouds.draw(self.display_surface, self.world_shift)
@@ -269,6 +289,9 @@ class Level:
 
         # water
         self.water.draw(self.display_surface, self.world_shift)
+
+        # show level texts
+        self.display_surface.blit(self.text_surface, self.text_rect)
 
         # log text
         self.show_variable_interactions()
