@@ -1,4 +1,5 @@
 import pygame
+from decoration import Sky
 from game_data import world_levels
 from utils import import_folder 
 
@@ -32,6 +33,7 @@ class Node(pygame.sprite.Sprite):
             tint_surface.fill('black', None, pygame.BLEND_RGBA_MULT)
             self.image.blit(tint_surface, (0,0))
 
+
 class PlayerIcon(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
@@ -57,6 +59,8 @@ class Overworld:
 
         self.setup_nodes()
         self.setup_player_icon()
+
+        self.sky = Sky(8, 'overworld')
 
     def setup_nodes(self):
         self.nodes = pygame.sprite.Group()
@@ -137,6 +141,7 @@ class Overworld:
         self.player_icon.update()
         self.nodes.update()
 
+        self.sky.draw(self.display_surface)
         self.draw_lines()
         self.nodes.draw(self.display_surface)
         self.player_icon.draw(self.display_surface)
