@@ -14,6 +14,7 @@ class Level:
         # group of tiles
         self.tiles = pygame.sprite.Group()
         self.player = pygame.sprite.GroupSingle()
+        self.goal = pygame.sprite.GroupSingle()
 
         self.current_level = current_level
         self.level_content = self.current_level['content']
@@ -234,6 +235,21 @@ class Level:
             self.current_level = world_levels[str(current_stage)]
             self.create_overworld(self.current_level, 0)
 
+    def check_death(self):
+        if self.player_sprite.rect.top > screen_height:
+            current_stage = self.current_level['stage']
+            self.current_level = world_levels[str(current_stage)]
+            self.create_overworld(self.current_level, 0)
+
+    def check_win(self):
+        '''
+        Needs to create a win condition.
+        '''
+        if pygame.sprite.spritecollide(self.player_sprite, self.goal, False):
+            current_stage = self.current_level['stage']
+            self.current_level = world_levels[str(current_stage)]
+            self.create_overworld(self.current_level, self.new_max_level)
+
     def run(self):
         self.input()
         # sky
@@ -292,6 +308,10 @@ class Level:
 
         # show level texts
         self.display_surface.blit(self.text_surface, self.text_rect)
+
+        # checks win and death
+        self.check_death()
+        self.check_win()
 
         # log text
         self.show_variable_interactions()

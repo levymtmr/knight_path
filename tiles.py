@@ -37,7 +37,6 @@ class Crate(StaticTile):
         self.rect = self.image.get_rect(bottomleft=(x, offset_y))
 
 
-
 class AnimatedTile(Tile):
     def __init__(self, size, x, y, path):
         super().__init__((x, y), size)
