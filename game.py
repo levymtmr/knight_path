@@ -1,3 +1,4 @@
+from re import S
 from overworld import Overworld
 from level import Level
 from game_data import world_levels
@@ -10,7 +11,7 @@ class Game:
 
         # player status
         self.max_health = 100
-        self.current_health = 100
+        self.current_health = 10
         self.coins = 0
 
         # overworld creation
@@ -40,6 +41,14 @@ class Game:
     def change_health(self, amount):
         self.current_health += amount
 
+    def check_game_over(self):
+        if self.current_health <= 0:
+            self.current_health = 100
+            self.coins = 0
+            self.max_level = 1
+            self.overworld = Overworld(world_levels['0'], self.max_level, self.screen, self.create_level)
+            self.status = 'overworld'
+
     def run(self):
         if self.status == 'overworld':
             self.overworld.run()
@@ -47,4 +56,5 @@ class Game:
             self.level.run()
             self.ui.show_health(self.current_health, self.max_health)
             self.ui.show_coins_bank(self.coins)
+            self.check_game_over()
 
