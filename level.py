@@ -1,3 +1,4 @@
+from re import S
 import pygame
 
 from tiles import Coin, Crate, Tile, StaticTile, Palm, Grass
@@ -10,7 +11,7 @@ from decoration import Cloud, Sky, Water
 from game_data import world_levels
 
 class Level:
-    def __init__(self, current_level, surface, create_overworld):
+    def __init__(self, current_level, surface, create_overworld, change_coins, change_health):
         # group of tiles
         self.tiles = pygame.sprite.Group()
         self.player = pygame.sprite.GroupSingle()
@@ -23,13 +24,19 @@ class Level:
 
         # level setup
         self.display_surface = surface
-        self.setup_level(self.level_data)
+        self.player_setup_level(self.level_data, change_health)
         self.world_shift = 0
         self.current_x = 0
         self.create_overworld = create_overworld
 
+        # user interface
+        self.change_coins = change_coins
+
         # dust
         self.dust_sprite = pygame.sprite.GroupSingle()
+
+        # explosion particles
+        self.explosion_sprite = pygame.sprite.Group()
 
         self.player_on_ground = False
 
@@ -94,8 +101,8 @@ class Level:
                         sprite = Crate(tile_size, x, y)
 
                     if type == 'coins':
-                        if value == '0': sprite = Coin(tile_size, x, y, './graphics/coins/gold')
-                        if value == '1': sprite = Coin(tile_size, x, y, './graphics/coins/silver')
+                        if value == '0': sprite = Coin(tile_size, x, y, './graphics/coins/gold', 5)
+                        if value == '1': sprite = Coin(tile_size, x, y, './graphics/coins/silver', 1)
 
                     if type == 'fg_palms':
                         if value == '0': sprite = Palm(tile_size, x, y, './graphics/terrain/palm_small', 38)
@@ -138,7 +145,7 @@ class Level:
         else:
             self.player_on_ground = False
 
-    def setup_level(self, layout):
+    def player_setup_level(self, layout, change_health):
         for row_index, row in enumerate(layout):
             for col_index, cell in enumerate(row):
                 # add the value position for each iteration match.
@@ -148,7 +155,7 @@ class Level:
                     tile = Tile((pos_x, pos_y), tile_size)
                     self.tiles.add(tile)
                 if cell == 'p':
-                    self.player_sprite = Player((200, 200), self.display_surface, self.create_jump_particles)
+                    self.player_sprite = Player((200, 200), self.display_surface, self.create_jump_particles, change_health)
                     self.player.add(self.player_sprite)
 
     def scroll_x(self):
@@ -250,6 +257,28 @@ class Level:
             self.current_level = world_levels[str(current_stage)]
             self.create_overworld(self.current_level, self.new_max_level)
 
+    def check_coin_collision(self):
+        collide_coins = pygame.sprite.spritecollide(self.player_sprite, self.coins_sprites, True)
+        if collide_coins:
+            for coin in collide_coins:
+                self.change_coins(coin.value)
+
+    def check_enemy_collision(self):
+        enemy_collision = pygame.sprite.spritecollide(self.player_sprite, self.enemy_sprites, False)
+
+        if enemy_collision:
+            for enemy in enemy_collision:
+                enemy_center = enemy.rect.centery
+                enemy_top = enemy.rect.top
+                player_bottom = self.player_sprite.rect.bottom
+                if enemy_top < player_bottom < enemy_center and self.player_sprite.direction.y >= 0:
+                    self.player_sprite.direction.y = -15
+                    explosion_sprite = ParticleEffect(enemy.rect.center, 'explosion')
+                    self.explosion_sprite.add(explosion_sprite)
+                    enemy.kill()
+                else:
+                    self.player_sprite.get_damage()
+
     def run(self):
         self.input()
         # sky
@@ -261,8 +290,6 @@ class Level:
         self.dust_sprite.draw(self.display_surface)
 
         # tiles draw
-        # self.tiles.update(self.world_shift)
-        # self.tiles.draw(self.display_surface)
         self.scroll_x()
 
         # bg_palms
@@ -282,6 +309,8 @@ class Level:
         self.constraints_sprites.update(self.world_shift)
         self.enemy_collision_reverse()
         self.enemy_sprites.draw(self.display_surface)
+        self.explosion_sprite.update(self.world_shift)
+        self.explosion_sprite.draw(self.display_surface)
 
         # fg_palms
         self.fg_palms_sprites.update(self.world_shift)
@@ -312,6 +341,10 @@ class Level:
         # checks win and death
         self.check_death()
         self.check_win()
+
+        
+        self.check_coin_collision()
+        self.check_enemy_collision()
 
         # log text
         self.show_variable_interactions()
