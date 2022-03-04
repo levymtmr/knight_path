@@ -1,4 +1,3 @@
-from re import S
 from overworld import Overworld
 from level import Level
 from game_data import world_levels

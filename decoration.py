@@ -1,4 +1,3 @@
-from re import S, X
 import pygame
 
 from settings import tile_size, screen_width, vertical_tile_number

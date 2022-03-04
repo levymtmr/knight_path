@@ -1,4 +1,3 @@
-from re import S
 import pygame
 
 from tiles import Coin, Crate, Tile, StaticTile, Palm, Grass
@@ -175,43 +174,36 @@ class Level:
 
     def horizontal_movement_colission(self):
         player = self.player.sprite
-        player.rect.x += player.direction.x * player.speed
+        player.collision_rect.x += player.direction.x * player.speed
 
         for sprite in self.terrain_sprites:
-            if sprite.rect.colliderect(player.rect) and not self.constraints_sprites:
+            if sprite.rect.colliderect(player.collision_rect) and not self.constraints_sprites:
                 if player.direction.x < 0:
-                    player.rect.left = sprite.rect.right
+                    player.collision_rect.left = sprite.rect.right
                     player.on_left = True
                     self.current_x = player.rect.left 
                 elif player.direction.x > 0:
-                    player.rect.right = sprite.rect.left
+                    player.collision_rect.right = sprite.rect.left
                     player.on_right = True
                     self.current_x = player.rect.right
-
-        if player.on_left and (player.rect.left < self.current_x or player.direction.x >= 0):
-            player.on_left = False
-        if player.on_right and (player.rect.right > self.current_x or player.direction.x <= 0):
-            player.on_right = False
 
     def vertical_movement_colission(self):
         player = self.player.sprite
         player.apply_gravity()
 
         for sprite in self.terrain_sprites:
-            if sprite.rect.colliderect(player.rect):
+            if sprite.rect.colliderect(player.collision_rect):
                 if player.direction.y > 0:
-                    player.rect.bottom = sprite.rect.top
+                    player.collision_rect.bottom = sprite.rect.top
                     player.direction.y = 0
                     player.on_ground = True
                 elif player.direction.y < 0:
-                    player.rect.top = sprite.rect.bottom
+                    player.collision_rect.top = sprite.rect.bottom
                     player.direction.y = 0
                     player.on_ceiling = True
 
         if player.on_ground and player.direction.y < 0 or player.direction.y > 1:
             player.on_ground = False
-        if player.on_ceiling and player.direction.y > 0.1:
-            player.on_ceiling = False
 
     def show_variable_interactions(self):
         world_shift_text = self.font.render(f" \
@@ -341,7 +333,6 @@ class Level:
         # checks win and death
         self.check_death()
         self.check_win()
-
         
         self.check_coin_collision()
         self.check_enemy_collision()

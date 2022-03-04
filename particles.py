@@ -1,4 +1,3 @@
-import imp
 import pygame
 from utils import import_folder
 
