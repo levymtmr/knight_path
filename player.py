@@ -31,6 +31,10 @@ class Player(pygame.sprite.Sprite):
         # self.collision_surface = pygame.Surface((self.collision_rect.width, self.collision_rect.height))
         # self.collision_surface.fill('red')
 
+        # audio
+        self.jump_sound = pygame.mixer.Sound('./audio/effects/jump.wav')
+        self.hit_sound = pygame.mixer.Sound('./audio/effects/hit.wav')
+
         # player status
         self.status = 'idle'
         self.facing_right = True
@@ -135,12 +139,14 @@ class Player(pygame.sprite.Sprite):
 
     def jump(self):
         self.direction.y = self.jump_speed
+        self.jump_sound.play()
 
     def get_damage(self):
         if not self.invincible:
             self.change_health(-10)
             self.invincible = True
             self.hurt_time = pygame.time.get_ticks()
+            self.hit_sound.play()
 
     def invincibility_timer(self):
         if self.invincible:

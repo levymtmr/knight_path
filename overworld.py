@@ -62,6 +62,11 @@ class Overworld:
 
         self.sky = Sky(8, 'overworld')
 
+        # overworld time delay to switch between levels
+        self.start_time = pygame.time.get_ticks()
+        self.allow_input = False
+        self.timer_lenght = 500
+
     def setup_nodes(self):
         self.nodes = pygame.sprite.Group()
 
@@ -95,7 +100,7 @@ class Overworld:
     def input(self):
         keys = pygame.key.get_pressed()
 
-        if not self.moving:
+        if not self.moving and self.allow_input:
             if keys[pygame.K_RIGHT] and self.current_level['stage'] < self.max_level:
                 self.move_direction = self.get_movement_data('next')
                 self.current_level['stage'] += 1
@@ -108,6 +113,12 @@ class Overworld:
                 current_stage = self.current_level['stage']
                 self.current_level = world_levels[str(current_stage)]
                 self.create_level(self.current_level)
+
+    def input_timer(self):
+        if not self.allow_input:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.start_time >= self.timer_lenght:
+                self.allow_input = True
 
     def update_icon_position(self):
         if self.moving and self.move_direction:
@@ -136,6 +147,7 @@ class Overworld:
         return (end - start).normalize()
 
     def run(self):
+        self.input_timer()
         self.input()
         self.update_icon_position()
         self.player_icon.update()
