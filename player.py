@@ -33,6 +33,7 @@ class Player(pygame.sprite.Sprite):
 
         # audio
         self.jump_sound = pygame.mixer.Sound('./audio/effects/jump.wav')
+        self.jump_sound.set_volume(0.5)
         self.hit_sound = pygame.mixer.Sound('./audio/effects/hit.wav')
 
         # player status
